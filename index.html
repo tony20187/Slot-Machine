@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>｜華谷電機｜照片拉霸機｜v2025.10.18-7｜製作者：華谷電機機工課雷射組 副組長 李書宏</title>
+  <link rel="icon" type="image/x-icon" href="./icon.ico" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- 4K / 大電視自動縮放整體 UI（可調整 min/max 比例） -->
+  <script>
+    (() => {
+      const base = 1920;             // 以 1920 寬為 1.0 倍基準
+      const raw  = window.screen.width / base;
+      const scale = Math.max(1, Math.min(2, raw)); // 限制 1.0 ~ 2.0
+      document.addEventListener('DOMContentLoaded', () => {
+        document.documentElement.style.zoom = scale.toFixed(2);
+      });
+    })();
+  </script>
+</head>
+
+<body>
+  <!-- 標題＋藍色膠囊底 -->
+  <div class="title-banner">
+    <h1>🎰 華谷電機照片拉霸機 🎰</h1>
+  </div>
+
+  <div class="wrap">
+    <div class="machine">
+      <div class="slot"><img id="r1" alt="reel-1" /></div>
+      <div class="slot"><img id="r2" alt="reel-2" /></div>
+      <div class="slot"><img id="r3" alt="reel-3" /></div>
+    </div>
+
+    <div id="msg" class="message">照片已就緒：按下方拉霸按鈕開始！</div>
+
+    <!-- 控制列：聲音＋音量＋拉霸鈕＋統計 -->
+    <div class="control-bar">
+      <!-- 左：聲音＋音量 -->
+      <div class="wing left">
+        <div class="toggle" id="muteBtn">🔊 聲音：開</div>
+        <label>音量 <input type="range" id="vol" min="0" max="100" value="70" /></label>
+      </div>
+
+      <!-- 中：拉霸按鈕 -->
+      <div class="center">
+        <button id="panelSpinBtn" class="btn primary">🎰 拉霸！( START )</button>
+      </div>
+
+      <!-- 右：總連線統計（上）＋版本（下） -->
+      <div class="wing right">
+        <div class="stat" id="totalStat">總連線中獎次數：0</div>
+        <div class="version-text" id="versionText">版本：v2025.10.18-7</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 密碼保護設定面板 -->
+  <details class="config">
+    <summary>⚙️ 參數調整面板（需密碼）</summary>
+
+    <div id="passwordArea">
+      <input type="password" id="passInput" placeholder="輸入密碼" />
+      <button class="btn" id="passBtn">確定</button>
+      <span id="passMsg"></span>
+    </div>
+
+    <div id="cfgContainer" style="display:none;">
+      <!--（已移除尺寸滑桿；尺寸交由 CSS 響應 & 上方 zoom 控制）-->
+
+      <!-- 強制三連線機率列與其餘表格會由 script.js 動態插入 -->
+
+      <div class="muted">
+        上限：0 或空白＝不限制。當某人物「已中」達上限後，會被移出轉盤；
+        按「重置」或「重置遊戲」才會回復。
+      </div>
+
+      <div id="cfg" class="cfg-grid"></div>
+
+      <div class="cfg-actions">
+        <button class="btn" id="applyBtn">套用設定</button>
+        <button class="btn" id="resetWinsAllBtn">重置遊戲</button>
+        <button class="btn" id="resetBtn">重置預設</button>
+      </div>
+    </div>
+  </details>
+
+  <script src="script.js"></script>
+</body>
+</html>

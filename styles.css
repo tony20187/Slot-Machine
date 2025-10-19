@@ -1,0 +1,229 @@
+:root{
+  --bg1:#0b0c14; --bg2:#000; --ink:#e9ecf2; --frame:#292e42;
+  --accent:#ffd54a; --ok:#38ef7d; --bad:#ff6b6b; --gold:#f5c542;
+
+  /* 槽位最小/最大邊長（正方形） */
+  --slot-min: 280px;
+  --slot-max: 720px;
+
+  /* 包裝最大寬（控制大螢幕放大上限） */
+  --wrap-max: 2400px;
+
+  /* 依視窗寬度在 min~max 間等比例縮放（3 欄） */
+  --slot-size: clamp(
+    var(--slot-min),
+    calc((min(100vw, var(--wrap-max)) - 160px) / 3),
+    var(--slot-max)
+  );
+}
+
+*{ box-sizing:border-box }
+html,body{ height:100%; margin:0 }
+
+body{
+  color:var(--ink);
+  font-family:"Noto Sans TC",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+  /* 背景：疊圖＋漸層 */
+  background:
+    url("./bg_unicorn.png") center/cover no-repeat fixed,
+    radial-gradient(circle at 50% 25%, #14172a 0%, var(--bg2) 70%);
+  background-attachment: fixed;
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+  overflow-x:hidden; overflow-y:auto; padding-bottom:260px;
+}
+
+/* ===== 標題：與拉霸外框同調 ===== */
+h1{
+  display:inline-block;
+  margin:16px 0 0; padding:10px 24px;
+  background:linear-gradient(180deg,#14192b,#0f1120);
+  color:#ffd54a; font-weight:800; letter-spacing:2px; text-align:center;
+  border:2px solid #292e42; border-radius:12px;
+  box-shadow:inset 0 0 0 2px #0b0d18, 0 6px 18px rgba(0,0,0,.4), 0 0 20px rgba(255,213,74,.25);
+  text-shadow:0 0 10px rgba(255,213,74,.6), 0 0 20px rgba(255,160,0,.4);
+}
+
+/* 置頂操作列 */
+.hud{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; font-size:15px; width:100%; max-width:1100px; }
+.hud-right{ margin-left:auto; display:flex; align-items:center; gap:8px; }
+.stat{ padding:6px 10px; border:1px solid #2b3044; border-radius:10px; background:#0f1222; }
+.btn,.toggle,.pill{ background:#171a2a; border:1px solid #2b3044; color:#cfd3df; padding:8px 12px; border-radius:10px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.35); user-select:none; }
+
+/* 外層包裝，寬度跟著 3 欄槽位 */
+.wrap{
+  padding:22px;
+  background:linear-gradient(180deg,#14192b,#0f1120);
+  border:2px solid var(--frame); border-radius:22px;
+  box-shadow:inset 0 0 0 2px #0b0d18, 0 30px 70px rgba(0,0,0,.55);
+  width:100%;
+  max-width:min(calc(100vw - 64px), calc(3 * var(--slot-size) + 96px));
+  margin:0 auto;
+}
+
+/* === 拉霸盤：三欄自動縮放，不溢出 === */
+.machine{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:24px; padding:24px;
+  background:#0e1020; border:2px solid #23283a; border-radius:16px;
+  width:100%;
+  max-width:min(calc(100vw - 64px), calc(3 * var(--slot-size) + 96px));
+  margin:0 auto;
+}
+
+/* === 槽位（正方形）、圖片永不超出格子 === */
+.slot{
+  width:100%;
+  aspect-ratio:1 / 1;
+  position:relative; overflow:hidden; border-radius:14px;
+  border:3px solid #3c4055; background:#0b0d18;
+  box-shadow:inset 0 0 20px rgba(0,0,0,.7);
+}
+.slot img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:contain; background:#0b0d18; filter:brightness(.98) contrast(1.02);
+}
+.slot.spin::after{
+  content:""; position:absolute; inset:0; border-radius:12px; border:1px solid rgba(255,213,74,.25);
+  box-shadow:0 0 26px rgba(255,213,74,.18), inset 0 0 24px rgba(255,213,74,.08);
+  animation:pulse .4s infinite alternate ease-in-out;
+}
+@keyframes pulse{ from{opacity:.4} to{opacity:1} }
+.blur{ filter:brightness(.95) contrast(1.03) blur(2px) }
+
+/* === 狀態文字 === */
+.message{ margin-top:10px; text-align:center }
+.message.ok{ color:var(--ok) } .message.bad{ color:var(--bad) }
+
+/* 三連線：金框＋震動 */
+.slot.win{
+  border-color:var(--gold);
+  box-shadow:0 0 32px rgba(245,197,66,.55), inset 0 0 18px rgba(245,197,66,.25);
+  animation:shake .45s ease-in-out;
+}
+@keyframes shake{
+  0%{transform:translateX(0) rotate(0)}
+  20%{transform:translateX(-2px) rotate(-.5deg)}
+  40%{transform:translateX(2px) rotate(.5deg)}
+  60%{transform:translateX(-1px) rotate(-.3deg)}
+  80%{transform:translateX(1px) rotate(.3deg)}
+  100%{transform:translateX(0) rotate(0)}
+}
+
+/* 三連線：背景閃光 */
+.win-flash::before{
+  content:""; position:fixed; inset:-10vmax; pointer-events:none;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.85), rgba(255,255,255,0) 40%),
+    radial-gradient(circle at 30% 30%, rgba(255,215,64,.7), rgba(255,215,64,0) 45%),
+    radial-gradient(circle at 70% 70%, rgba(120,200,255,.6), rgba(120,200,255,0) 45%);
+  mix-blend-mode:screen; filter:blur(2px); animation:flashPop .9s ease-out forwards;
+}
+@keyframes flashPop{ 0%{opacity:0;transform:scale(.8)} 15%{opacity:1;transform:scale(1)} 60%{opacity:.9} 100%{opacity:0;transform:scale(1.25)} }
+
+/* =================== 參數調整面板 =================== */
+details.config{
+  width:100%; max-width:1100px;
+  background:#0f1222; border:1px solid #2b3044; border-radius:14px;
+  padding:10px 12px; color:#cfd3df; margin:32px auto 24px;
+}
+
+/* 尺寸滑桿排版 */
+.size-row{ display:flex; align-items:center; gap:10px; margin:8px 0 14px; }
+.size-row input[type="range"]{ width:220px; }
+
+/* 欄位表格（人物 / 權重 / 預覽 / 已中 / 上限 / 重置） */
+#cfg{
+  display:grid;
+  grid-template-columns:1.2fr .9fr 1.1fr .5fr .8fr .6fr;
+  gap:8px; align-items:center;
+}
+#cfg .hdr{ font-weight:700; opacity:.9 }
+#cfg input{
+  width:100%; padding:8px 10px;
+  border:1px solid #3a415a; background:#12162a; color:#e7ebf8; border-radius:8px;
+}
+
+/* 預覽縮圖：固定列高、內圖等比；Hover 放大預覽（不影響版面） */
+#cfg .prevBox{
+  width:90px; height:90px;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid #3a415a; border-radius:8px; background:#0b0d18;
+  position:relative; overflow:hidden;           /* 預設不外溢 */
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+#cfg .prevBox img{
+  width:100%; height:100%; object-fit:contain;
+  border-radius:6px; background:#0b0d18;
+  transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+
+/* ✅ Hover 預覽放大效果（浮出、置頂、不擠位） */
+#cfg .prevBox:hover{
+  overflow:visible;                 /* 允許放大溢出 */
+  z-index:10;
+}
+#cfg .prevBox:hover img{
+  transform:scale(5);
+  box-shadow:0 12px 26px rgba(0,0,0,.55);
+  filter:brightness(1) contrast(1.05);
+}
+
+/* 重置鈕縮小置中 */
+#cfg .btn, #cfg .btn.mini{
+  width:72px; height:28px; padding:4px 10px; font-size:14px; line-height:1;
+  border-radius:6px; margin:0 auto; display:block;
+}
+
+/* 面板按鈕區 */
+.cfg-actions{ display:flex; gap:8px; justify-content:flex-end; }
+.muted{ color:#9fb2ff; font-size:12px }
+
+/* === 面板內「立即轉一次」按鈕（若有） === */
+#panelSpinBtn{
+  display:block; margin:12px auto 0; transform:translateY(-4px);
+  background:linear-gradient(180deg,#ff6aa6,#ff3b7c);
+  color:#fff; border:0; border-radius:12px; padding:12px 26px; font-size:18px; font-weight:800;
+  box-shadow:0 6px 18px rgba(255,64,128,.45);
+  transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+}
+#panelSpinBtn:hover{ transform:translateY(-6px); box-shadow:0 10px 24px rgba(255,64,128,.55) }
+#panelSpinBtn:active{ transform:translateY(-2px) }
+#panelSpinBtn.disabled{ opacity:.55; pointer-events:none }
+#panelSpinBtn.press-glow{
+  box-shadow:0 0 0 rgba(255,64,128,0);
+  animation:panelSpinGlow .6s ease-out;
+}
+@keyframes panelSpinGlow{
+  0%{box-shadow:0 0 0 rgba(255,64,128,0)}
+  30%{box-shadow:0 0 28px rgba(255,64,128,.85), 0 0 60px rgba(255,140,180,.45)}
+  100%{box-shadow:0 6px 18px rgba(255,64,128,.45)}
+}
+
+/* ✅ 聲音靠左、拉霸鈕置中、總中獎靠右 */
+.control-bar{
+  position:relative; display:flex; align-items:center; justify-content:center;
+  width:100%; max-width:min(calc(100vw - 64px), calc(3 * var(--slot-max) + 96px));
+  margin:12px auto 0; padding:0 24px;
+}
+.control-bar .wing.left{
+  position:absolute; left:24px; display:flex; align-items:center; gap:12px;
+}
+.control-bar .wing.left label{ display:flex; align-items:center; gap:6px; margin:0 }
+.control-bar .center{ display:flex; justify-content:center; align-items:center }
+.control-bar .wing.right{ position:absolute; right:24px; display:flex; align-items:center; flex-direction:column; align-items:flex-end }
+.control-bar #vol{ width:140px }
+.control-bar .stat{
+  padding:6px 10px; border:1px solid #2b3044; border-radius:10px; background:#0f1222; color:var(--ink); font-size:15px;
+}
+.version-text{ font-size:13px; color:#9ca3af; margin-top:4px; opacity:.85; text-align:right }
+
+/* 小螢幕微調 */
+@media (max-width:1024px){
+  :root{ --slot-size: min(var(--slot-max), calc((100vw - 64px) / 3)); }
+  #cfg{ grid-template-columns:1fr .8fr 1fr .5fr .8fr .6fr; }
+}
+@media (max-width:600px){
+  :root{ --slot-size: min(var(--slot-max), calc((100vw - 36px) / 3)); }
+  #panelSpinBtn{ font-size:16px; padding:11px 22px; transform:translateY(-2px) }
+}
