@@ -1,6 +1,6 @@
 {
   "name": "slotmachine",
-  "version": "2025.10.18-2",
+  "version": "2025.10.18-8",
   "description": "華谷電機三格照片拉霸機",
   "main": "main.js",
   "scripts": {
